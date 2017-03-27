@@ -1,0 +1,35 @@
+node=matadore02;\
+      echo "*/3 * * * *    root /u/bin/syncsql_customer.sh ${node} >> /usr/local/alert/xfer/${node}/syncsql.log 2>&1" >> /etc/cron.d/ssql;\
+      echo "*/2 * * * *    root sleep 40; /u/bin/logparse_xfer_new2.sh ${node} >> /usr/local/alert/xfer/${node}/logparse.log 2>&1" >> /etc/cron.d/logparse;\
+      ssh gazelle "echo \"*/2 * * * *    root   sleep 15; /u/bin/syncsql_db.sh ${node} ods >> /usr/local/alert/xfer/${node}/syncsql_db.log 2>&1\" >> /etc/cron.d/syncsql_slow; ssh ${node}.alertsite.com -o StrictHostKeyChecking=no 'echo test'"
+node=matadore02; node_ip=212.34.152.222;\
+      ssh-keygen -R ${node}.alertsite.com; ssh-keygen -R ${node_ip};\
+      ssh pages "ssh-keygen -R ${node}.alertsite.com; ssh-keygen -R ${node_ip}; ssh ${node}.alertsite.com -o StrictHostKeyChecking=no 'echo \"pages ssh success\"'";\
+      ssh flash "ssh-keygen -R ${node}.alertsite.com; ssh-keygen -R ${node_ip}; ssh flash.alertsite.com -o StrictHostKeyChecking=no 'echo \"flash ssh success\"'";\
+      for cust_db in beast bison camel crow dodo gazelle hippo hulk husky lion llama mammoth moose mothra orca rhino shrimp whale wolf zebra;\
+        do ssh -o StrictHostKeyChecking=no ${cust_db}.alertsite.com "echo ${cust_db}; mkdir -p /usr/local/alert/xfer/${node}/inbound; mkdir -p /usr/local/alert/xfer/${node}/wrk; ssh-keygen -R ${node}.alertsite.com; ssh-keygen -R ${node_ip}; ssh ${node} -o StrictHostKeyChecking=no 'echo \"ssh success\"'";\
+        done;
+node=matadore02;\        
+    mkdir /var/lib/mysql/tmp_customer_hotcopy;\
+    mysqlhotcopy -p g0tm1lk customer  /var/lib/mysql/tmp_customer_hotcopy;\
+    ssh -o StrictHostKeyChecking=no ${node}.alertsite.com 'service mysql stop';\
+    rsync -arvz --progress  /var/lib/mysql/tmp_customer_hotcopy/customer ${node}.alertsite.com:/var/lib/mysql/;\
+    rm -r  /var/lib/mysql/tmp_customer_hotcopy;\    
+    ssh -o StrictHostKeyChecking=no ${node}.alertsite.com 'chown -R mysql:mysql /var/lib/mysql; service mysql start'
+
+Run one at a time 
+
+node=gambler02;echo "*/2 * * * *    root sleep 40; /u/bin/logparse_xfer_new2.sh ${node} >> /usr/local/alert/xfer/${node}/logparse.log 2>&1" >> /etc/cron.d/logparse;
+
+node=gambler02;ssh gazelle "echo \"*/2 * * * *    root   sleep 15; /u/bin/syncsql_db.sh ${node} ods >> /usr/local/alert/xfer/${node}/syncsql_db.log 2>&1\" >> /etc/cron.d/syncsql_slow; ssh ${node}.alertsite.com -o StrictHostKeyChecking=no 'echo test'"
+
+
+node=gambler02; ssh -o StrictHostKeyChecking=no ${node}.alertsite.com 'chown -R mysql:mysql /var/lib/mysql; service mysql start'
+
+ssh -o StrictHostKeyChecking=no ${node}.alertsite.com 'chown -R mysql:mysql /var/lib/mysql; service mysql start'
+
+
+
+~dankalytovskyy/ansible/run_on.sh bootstrap utes02.alertsite.com
+~dankalytovskyy/ansible/run.sh common --limit utes02.alertsite.com
+~/ansible/run.sh common --limit utes02.alertsite.com
